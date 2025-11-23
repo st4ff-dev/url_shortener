@@ -1,0 +1,1 @@
+from .funcs import generate_short_url
