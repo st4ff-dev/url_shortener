@@ -1,3 +1,5 @@
+from tortoise.exceptions import IntegrityError
+
 from app.utils.funcs import generate_short_url
 
 from app.models.url import Url
@@ -29,23 +31,24 @@ class UrlService:
 
     @staticmethod
     async def create_or_get(long_url: str) -> ServiceResponse:
-        url_obj = await Url.filter(url=long_url).first()
-
-        if not url_obj:
-            short_url = generate_short_url()
-
+        short_url = generate_short_url()
+        
+        try:
             url_obj = await Url.create(
                 url=long_url,
                 short_url=short_url
             )
             
-            if not url_obj:
-                return ServiceResponse(
-                    data={
-                        "message": "URL is not created, please try again"
-                    },
-                    status=500
-                )
+        except IntegrityError:
+            url_obj = await Url.filter(url=long_url).first()
+
+        if not url_obj:
+            return ServiceResponse(
+                data={
+                    "message": "URL is not created, please try again"
+                },
+                status=500
+            )
 
         return ServiceResponse(
             data={
