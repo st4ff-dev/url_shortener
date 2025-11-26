@@ -1,3 +1,5 @@
+from fastapi_cache.decorator import cache
+
 from tortoise.exceptions import IntegrityError
 
 from app.utils.funcs import generate_short_url
@@ -10,6 +12,7 @@ from app.utils.types import ServiceResponse
 class UrlService:
 
     @staticmethod
+    @cache(expire=60, namespace="slug")
     async def get_by_slug(slug: str) -> ServiceResponse:
         url_obj = await Url.filter(short_url=slug).first()
 
